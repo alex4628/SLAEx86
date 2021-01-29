@@ -1,5 +1,5 @@
 ; custom-decoder.nasm
-; Author: Alex Z
+; Author: Alex
 
 
 global _start
