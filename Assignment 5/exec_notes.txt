@@ -1,0 +1,17 @@
+0x0804a040 <+0>:		push   0xb           ; push 0x0b onto the stack
+0x0804a042 <+2>:		pop    eax           ; pop the value 0x0b into EAX, this is the 'execve' syscall number 11 (0x0B in HEX)
+0x0804a043 <+3>:		cdq                  ; convert double word to quad word - extends the sign bit of EAX into the EDX register, this sets the value of EDX to 0
+0x0804a044 <+4>:		push   edx           ; push EDX (0) onto the stack
+0x0804a045 <+5>:		pushw  0x632d        ; push the WORD value 0x632d onto the stack (in the little-format this would be 0x2d63, which is "-c" in ASCII)
+0x0804a049 <+9>:		mov    edi,esp       ; move the memory address pointed to by ESP, which contains "-c" followed by 00, into EDI
+0x0804a04b <+11>:	  push   0x68732f      ; push 0x2f7368 (HEX in little-endian) or "/sh" (ASCII) onto the stack
+0x0804a050 <+16>:	  push   0x6e69622f    ; push 0x2f62696e (HEX in little-endian) or "/bin" (ASCII) onto the stack
+0x0804a055 <+21>:	  mov    ebx,esp       ; move the memory address pointed to by ESP, which contains "/bin/sh" (7 bytes) followed by the remaining byte of 00 (values are pushed onto the stack as words or double-words only), into EBX
+0x0804a057 <+23>:	  push   edx           ; push EDX (0) onto the stack
+0x0804a058 <+24>:	  call   0x804a060 <code+32>  ; call the instruction at the memory address of 0x804a060 (see the disassembled code below)
+0x0804a05d <+29>:	  imul   esp,DWORD PTR [eax+eax*1+0x57],0xcde18953  ; push the pointer to the '0x0804a05d' memory address onto the stack right after the above call instruction is performed
+
+0x804a060 <code+32>:	push   edi        ; push the memory address containing "-c" onto the stack
+0x804a061 <code+33>:	push   ebx        ; push the memory address containing "/bin/sh + 00" onto the stack
+0x804a062 <code+34>:	mov    ecx,esp    ; move this memory address from ESP into ECX
+0x804a064 <code+36>:	int    0x80       ; issue the 'execve' syscall
